@@ -1,0 +1,13 @@
+<div id="corewidgetbox">
+    <div class="widgetrow home">
+    	<?php if($block->isLoggedIn()): ?>
+	        <span onclick="javascript: window.location.href='<?php /* @escapeNotVerified */ echo $block->getTicketListUrl(); ?>';"><a href="<?php /* @escapeNotVerified */ echo $block->getTicketListUrl(); ?>" class="widgetrowitem defaultwidget" style="background-image: URL('https://support.amasty.com/__swift/themes/client/images/icon_widget_viewticket.png');"><span class="widgetitemtitle">My Tickets</span></a></span>
+	    <?php else: ?>
+	        <span onclick="javascript: window.location.href='<?php /* @escapeNotVerified */ echo $block->getCreateAccountUrl(); ?>';"><a href="<?php /* @escapeNotVerified */ echo $block->getCreateAccountUrl(); ?>" class="widgetrowitem defaultwidget" style="background-image: URL('https://support.amasty.com/__swift/themes/client/images/icon_widget_viewticket.png');"><span class="widgetitemtitle">Register</span></a></span>
+	    <?php endif; ?>
+
+        <span onclick="javascript: window.location.href='<?php /* @escapeNotVerified */ echo $block->getTicketSubmitUrl(); ?>';"><a href="<?php /* @escapeNotVerified */ echo $block->getTicketSubmitUrl(); ?>" class="widgetrowitem defaultwidget" style="background-image: URL('https://support.amasty.com/__swift/themes/client/images/icon_widget_submitticket.png');"><span class="widgetitemtitle">Submit a Ticket</span></a></span>
+
+        <span><a href="javascript:void(0)" class="widgetrowitem defaultwidget" style="background-image: URL('https://support.amasty.com/__swift/themes/client/images/icon_widget_knowledgebase.png');"><span class="widgetitemtitle">Knowledgebase</span></a></span>
+    </div>
+</div>

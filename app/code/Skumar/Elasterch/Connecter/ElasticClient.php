@@ -4,15 +4,32 @@ namespace Skumar\Elasterch\Connecter;
 class ElasticClient
 {
     /**
+     * Host Configuration.
+     */
+    const HOSTS = ["http://127.0.0.1:9200"];
+
+    /**
+     * Host Configuration.
+     */
+    const PRODUCT_DOCUMENT_PARAMS = array('id', 'name', 'sku', 'price', 'product_url');
+
+    /**
      * @var \Elasticsearch\ClientBuilder
      */
     protected $_elasticClient;
 
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    protected $_logger;
+
 
     /**
      * @param \Elasticsearch\ClientBuilder $elastic
+     * @param \Psr\Log\LoggerInterface $logger
      */
-    public function __construct(\Elasticsearch\ClientBuilder $elastic) {
+    public function __construct(\Elasticsearch\ClientBuilder $elastic, \Psr\Log\LoggerInterface $logger) {
+        $this->_logger = $logger;
         $this->_elasticClient = $this->_buildElasticClient($elastic);
     }
 
@@ -23,7 +40,16 @@ class ElasticClient
 	 * @return \Elasticsearch\ClientBuilder
 	 */
     protected function _buildElasticClient($elastic) {
-		return $elastic::create()->setHosts(["http://127.0.0.1:9200"])->build();
+        try {
+    		$client = $elastic::create()                  // Instantiate a new ClientBuilder
+                ->setHosts(self::HOSTS)                   // Set the hosts
+                ->setLogger($this->_logger)               // Set the logger with a default logger
+                ->build();
+
+            return $client;
+        } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
+            $this->_logger->error($e);
+        }
     }
 
 
@@ -37,14 +63,28 @@ class ElasticClient
     }
 
 
+    /**
+     * Get product params
+     */
+    public function getProductParams() {
+        return self::PRODUCT_DOCUMENT_PARAMS;
+    }
+
+
+    /**
+     * Check document exists or not by ID
+     */
     public function isDocumentExist($type, $id) {
         try {
             $params['index'] = 'catalog';
             $params['type']  = $type;
             $params['id'] = $id;
+            $params['client'] = array('ignore' => array(400, 404));         // Ignoring exceptions
+
             $response = $this->_elasticClient->get($params);
-            return $response['found'];
+            return ($response['found'] > 0) ? true : false;
         } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
+            $this->_logger->error($e);
             return false;
         }
     }
@@ -60,10 +100,14 @@ class ElasticClient
         $params['type']  = $type;
         $params['id'] = $type . '-' . $id;
 
-        if($this->isDocumentExist($type, $params['id'])) {
-            $this->updateDocument($type, $params['id'], $temp_params['body']);
-        } else {
-	        $response = $this->_elasticClient->index($params);
+        try {
+            if($this->isDocumentExist($type, $params['id'])) {
+                $this->updateDocument($type, $params['id'], $temp_params['body']);
+            } else {
+    	        $response = $this->_elasticClient->index($params);
+            }
+        } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
+            $this->_logger->error($e);
         }
     }
 
@@ -85,6 +129,7 @@ class ElasticClient
             $params['body']['doc'] = $response['_source'];
             $this->_elasticClient->update($params);
         } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
+            $this->_logger->error($e);
         }
     }
 }

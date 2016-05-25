@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="catalog_product_save_after">
-        <observer name="elasterch_product_save_after" instance="Skumar\Elasterch\Observer\Productsaveafter" />
+        <observer name="elasterch_product_save_after" instance="Skumar\Elasterch\Observer\ProductSaveAfter" />
+    </event>
+    <event name="catalog_product_attribute_update_before">
+        <observer name="elasterch_product_attribute_update_before" instance="Skumar\Elasterch\Observer\ProductAttributeUpdateBefore" />
     </event>
 </config>
