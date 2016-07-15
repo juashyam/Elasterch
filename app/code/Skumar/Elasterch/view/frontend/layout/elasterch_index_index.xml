@@ -5,7 +5,7 @@
     </head>
     <body>
         <referenceContainer name="content">
-            <block class="Ktpl\Support\Block\SupportHome" name="elasterch" template="Ktpl_Support::home.phtml">
+            <block class="Skumar\Elasterch\Block\Elasterch" name="elasterch" template="Skumar_Elasterch::elasterch.phtml">
             </block>
         </referenceContainer>
     </body>

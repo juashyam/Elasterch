@@ -2,6 +2,7 @@
 namespace Skumar\Elasterch\Observer;
 
 use Magento\Framework\Event\ObserverInterface;
+use \Magento\Catalog\Model\Product\Visibility;
 
 class ProductSaveAfter implements ObserverInterface
 {
@@ -43,15 +44,25 @@ class ProductSaveAfter implements ObserverInterface
         $product = $this->_productFactory->create();
         $product->load($temp->getId());
 
-		$params['body']  = array(                                         // Document params
-			'id' => $product->getId(),
-			'name' => $product->getName(),
-			'sku' => $product->getSku(),
-			'price' => $product->getPrice(),
-			'product_url' => $product->getProductUrl()
-		);
+        if(in_array($product->getData('visibility'), array(Visibility::VISIBILITY_IN_SEARCH, Visibility::VISIBILITY_BOTH))) {
+            $params['body']  = array(                                         // Document params
+                'id' => $product->getId(),
+                'name' => $product->getName(),
+                'sku' => $product->getSku(),
+                'image' => $product->getData('image'),
+                'price' => $product->getData('price'),
+                'product_url' => $product->getProductUrl()
+            );
 
-		$this->_elasticClient
-            ->addDocument('product', $product->getId(), $params);        // Add document
+            $this->_elasticClient
+                ->addDocument('product', $product->getId(), $params);        // Add document
+        } else {
+            $params = [
+                'id' => 'product-'.$product->getId()
+            ];
+
+            $this->_elasticClient
+                ->deleteDocument('product', $params);        // Add document
+        }
     }
 }

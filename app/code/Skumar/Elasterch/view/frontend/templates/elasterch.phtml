@@ -1,0 +1,34 @@
+<div class="elasterch-container block block-content">
+	<div class="field search">
+		<div class="control">
+			<input type="text" autocomplete="off" aria-autocomplete="both" aria-haspopup="false" role="combobox" maxlength="128" class="input-text" placeholder="Search entire store here..." value="" name="q" id="elasterch">
+			<p></p>
+			<button class="action primary elasterch-button" type="button"><?php echo __('Search'); ?></button>
+			<div class="search-autocomplete" id="elasterch_autocomplete" style="display: none;"></div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+    require(['jquery','prototype'],function(jQuery){
+        jQuery(document).ready(function(){
+            jQuery(document).on('keyup change', '#elasterch', function(){
+				var params = {
+		            query_string: jQuery('#elasterch').val(),
+		            form_key: '<?php /* @escapeNotVerified */ echo $block->getFormKey(); ?>'
+		        };
+
+		        new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getElasterchProcessUrl() ?>', {
+		            loaderArea:     false,
+		            asynchronous:   true,
+		            parameters:     params,
+		            onSuccess: function(transport) {
+		                // var response = JSON.parse(transport.responseText);
+		                jQuery('#elasterch_autocomplete').html(transport.responseText);
+		                jQuery('#elasterch_autocomplete').show();
+		            }
+		        });
+            })
+        });
+    });
+</script>

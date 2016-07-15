@@ -1,0 +1,53 @@
+<?php /* @var $block \Skumar\Elasterch\Block\System\Config\Synchronize */ ?>
+
+<script>
+require([
+    'jquery',
+    'prototype',
+], function(jQuery){
+
+    function enableSyncButton() {
+        Form.Element.enable('synchronize_button');
+        $('synchronize_button').removeClassName('disabled');
+        $('sync_span').addClassName('no-display');
+    }
+
+    function disableSyncButton() {
+        Form.Element.disable('synchronize_button');
+        $('synchronize_button').addClassName('disabled');
+        $('sync_span').removeClassName('no-display');
+    }
+
+    function syncronize(pageNum = 1, flushIndex = 0) {
+        params = {
+            page_num: pageNum,
+            flush_index: flushIndex
+        };
+
+        new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getAjaxSyncUrl() ?>', {
+            loaderArea:     false,
+            asynchronous:   true,
+            parameters:     params,
+            onSuccess: function(transport) {
+                var response = JSON.parse(transport.responseText);
+                if(response.has_next_page > 0) {
+                    syncronize(response.page_num);
+                } else {
+                    enableSyncButton();
+                }
+            }
+        });
+    }
+
+    jQuery('#synchronize_button').click(function () {
+        disableSyncButton();
+        syncronize(1, 1);
+    });
+});
+</script>
+
+<?php echo $block->getButtonHtml() ?>
+<span class="sync-indicator no-display" id="sync_span">
+    <img alt="Synchronize" style="margin:0 5px" src="<?php /* @escapeNotVerified */ echo $block->getViewFileUrl('images/process_spinner.gif') ?>"/>
+    <span id="sync_message_span"></span>
+</span>

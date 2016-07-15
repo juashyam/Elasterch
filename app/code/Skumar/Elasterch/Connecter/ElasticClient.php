@@ -6,12 +6,17 @@ class ElasticClient
     /**
      * Host Configuration.
      */
-    const HOSTS = ["http://127.0.0.1:9200"];
+    const HOSTS = ["http://shyam:shyamkumar@10.16.16.160:3001"];
 
     /**
-     * Host Configuration.
+     * Index name
      */
-    const PRODUCT_DOCUMENT_PARAMS = array('id', 'name', 'sku', 'price', 'product_url');
+    const INDEX = "catalog";
+
+    /**
+     * DOcument parameters
+     */
+    const PRODUCT_DOCUMENT_PARAMS = array('id', 'name', 'sku', 'image', 'price', 'product_url');
 
     /**
      * @var \Elasticsearch\ClientBuilder
@@ -31,6 +36,7 @@ class ElasticClient
     public function __construct(\Elasticsearch\ClientBuilder $elastic, \Psr\Log\LoggerInterface $logger) {
         $this->_logger = $logger;
         $this->_elasticClient = $this->_buildElasticClient($elastic);
+
     }
 
 
@@ -46,10 +52,96 @@ class ElasticClient
                 ->setLogger($this->_logger)               // Set the logger with a default logger
                 ->build();
 
+            $indexParams['index']  = self::INDEX;
+
+            /*$indexParams = [
+                'index' => self::INDEX,
+                'body' => [
+                    'settings' => [
+                        'number_of_shards' => 1,
+                        'number_of_replicas' => 0,
+                        'analysis' => [
+                            'tokenizer' => [
+                                'my_ngram_tokenizer' => [
+                                    'type' => 'nGram',
+                                    'min_gram' => 1,
+                                    'max_gram' => 15,
+                                    'token_chars' => ['letter', 'digit']
+                                ]
+                            ],
+                            'analyzer' => [
+                                'my_ngram_analyzer' => [
+                                    'tokenizer' => 'my_ngram_tokenizer',
+                                    'filter' => 'lowercase',
+                                ]
+                            ],
+                        ]
+                    ],
+                    'mappings' => [
+                        '_default_' => [
+                            'properties' => [
+                                'id' => [
+                                    'type' => 'digit',
+                                    'index' => 'not_analyzed',
+                                ],
+                                'name' => [
+                                    'type' => 'string',
+                                    'analyzer' => 'my_ngram_analyzer',
+                                    'term_vector' => 'yes',
+                                    'copy_to' => 'combined'
+                                ],
+                                'sku' => [
+                                    'type' => 'string',
+                                    'analyzer' => 'my_ngram_analyzer',
+                                    'term_vector' => 'yes',
+                                    'copy_to' => 'combined'
+                                ],
+                                'image' => [
+                                    'type' => 'string',
+                                    'index' => 'not_analyzed',
+                                ],
+                                'price' => [
+                                    'type' => 'digit',
+                                    'index' => 'not_analyzed',
+                                ],
+                                'product_url' => [
+                                    'type' => 'string',
+                                    'index' => 'not_analyzed',
+                                ],
+                            ]
+                        ],
+                    ]
+                ]
+            ];*/
+
+            if(!$client->indices()->exists($indexParams)) {
+                $client->indices()->create($indexParams);
+            }
+
             return $client;
         } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
             $this->_logger->error($e);
         }
+    }
+
+
+    /**
+     * Init index
+     */
+    public function initIndex() {
+        $indexParams['index']  = self::INDEX;
+        if(!$this->_elasticClient->indices()->exists($indexParams)) {
+            $this->_elasticClient->indices()->create($indexParams);
+        }
+    }
+
+
+    /**
+     * Delete index
+     */
+    public function deleteIndex() {
+        $indexParams['index']  = self::INDEX;
+        $this->_elasticClient->indices()->delete($indexParams);
     }
 
 
@@ -76,7 +168,7 @@ class ElasticClient
      */
     public function isDocumentExist($type, $id) {
         try {
-            $params['index'] = 'catalog';
+            $params['index'] = self::INDEX;
             $params['type']  = $type;
             $params['id'] = $id;
             $params['client'] = array('ignore' => array(400, 404));         // Ignoring exceptions
@@ -91,12 +183,40 @@ class ElasticClient
 
 
     /**
+     * Search document
+     */
+    public function searchDocument($type, $size, $from, $queryString) {
+        try {
+            $params['index'] = 'catalog';
+            $params['type']  = $type;
+            $params['size']  = $size;
+            $params['from']  = $from;
+
+            /*$params['body']['query']['wildcard']['name'] = '*'.$queryString.'*';*/
+
+            $params['body']['query']['multi_match']['query'] = $queryString;
+            $params['body']['query']['multi_match']['type'] = 'best_fields';
+            $params['body']['query']['multi_match']['fields'] = ['name'];
+
+            $params['body']['sort'] = ['_score'];
+            $params['client'] = array('ignore' => array(400, 404));         // Ignoring exceptions
+
+            $response = $this->_elasticClient->search($params);
+            return $response;
+        } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
+            $this->_logger->error($e);
+            return false;
+        }
+    }
+
+
+    /**
      * Add document to index
      */
     public function addDocument($type, $id, array $params) {
         $temp_params = $params;
 
-        $params['index'] = 'catalog';
+        $params['index'] = self::INDEX;
         $params['type']  = $type;
         $params['id'] = $type . '-' . $id;
 
@@ -117,7 +237,7 @@ class ElasticClient
      */
     public function updateDocument($type, $id, array $data) {
         try {
-            $params['index'] = 'catalog';
+            $params['index'] = self::INDEX;
             $params['type']  = $type;
             $params['id'] = $id;
             $response = $this->_elasticClient->get($params);
@@ -132,4 +252,21 @@ class ElasticClient
             $this->_logger->error($e);
         }
     }
+
+
+    /**
+     * Delete document
+     */
+    public function deleteDocument($type, array $params) {
+        $params['index'] = self::INDEX;
+        $params['type']  = $type;
+
+        try {
+            if($this->isDocumentExist($type, $params['id'])) {
+                $this->_elasticClient->delete($params);
+            }
+        } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
+            $this->_logger->error($e);
+        }
+    }    
 }
