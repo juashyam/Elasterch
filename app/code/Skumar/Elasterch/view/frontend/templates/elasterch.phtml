@@ -1,34 +1,54 @@
-<div class="elasterch-container block block-content">
-	<div class="field search">
-		<div class="control">
-			<input type="text" autocomplete="off" aria-autocomplete="both" aria-haspopup="false" role="combobox" maxlength="128" class="input-text" placeholder="Search entire store here..." value="" name="q" id="elasterch">
-			<p></p>
-			<button class="action primary elasterch-button" type="button"><?php echo __('Search'); ?></button>
-			<div class="search-autocomplete" id="elasterch_autocomplete" style="display: none;"></div>
+<div class="block block-search">
+	<div class="elasterch-container block block-content">
+		<div class="field search">
+			<div class="control">
+				<input type="text" autocomplete="off" aria-autocomplete="both" aria-haspopup="false" role="combobox" maxlength="128" class="input-text" placeholder="Search entire store here..." value="" name="q" id="elasterch">
+				<p></p>
+				<div class="search-autocomplete" id="elasterch_autocomplete" style="display: none;"></div>
+			</div>
+
+			<div class="actions">
+                <button class="action search" title="Search" type="button" disabled="">
+                    <span>Search</span>
+                </button>
+            </div>
 		</div>
 	</div>
+
+	<script type="text/javascript">
+	    require(['jquery','prototype'],function(jQuery){
+	        jQuery(document).ready(function(){
+				var delay = (function(){
+				  var timer = 0;
+				  return function(callback, ms){
+				    clearTimeout (timer);
+				    timer = setTimeout(callback, ms);
+				  };
+				})();
+
+	            jQuery(document).on('keyup change', '#elasterch', function(){
+					delay(function(){
+		            	var qString = jQuery('#elasterch').val();
+
+		            	if(qString.length > 0) {
+							var params = {
+					            query_string: qString,
+					            form_key: '<?php /* @escapeNotVerified */ echo $block->getFormKey(); ?>'
+					        };
+
+					        new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getElasterchProcessUrl() ?>', {
+					            loaderArea:     false,
+					            asynchronous:   true,
+					            parameters:     params,
+					            onSuccess: function(transport) {
+					                jQuery('#elasterch_autocomplete').html(transport.responseText);
+					                jQuery('#elasterch_autocomplete').show();
+					            }
+					        });
+		            	}
+				    }, 700 );
+	            });
+	        });
+	    });
+	</script>
 </div>
-
-<script type="text/javascript">
-    require(['jquery','prototype'],function(jQuery){
-        jQuery(document).ready(function(){
-            jQuery(document).on('keyup change', '#elasterch', function(){
-				var params = {
-		            query_string: jQuery('#elasterch').val(),
-		            form_key: '<?php /* @escapeNotVerified */ echo $block->getFormKey(); ?>'
-		        };
-
-		        new Ajax.Request('<?php /* @escapeNotVerified */ echo $block->getElasterchProcessUrl() ?>', {
-		            loaderArea:     false,
-		            asynchronous:   true,
-		            parameters:     params,
-		            onSuccess: function(transport) {
-		                // var response = JSON.parse(transport.responseText);
-		                jQuery('#elasterch_autocomplete').html(transport.responseText);
-		                jQuery('#elasterch_autocomplete').show();
-		            }
-		        });
-            })
-        });
-    });
-</script>

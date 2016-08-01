@@ -1,7 +1,0 @@
-var config = {
-	map: {
-		'*': {
-			sweetalert: 'Ktpl_Support/js/sweetalert.min',
-		}
-	}
-}

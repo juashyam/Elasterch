@@ -64,7 +64,7 @@ class ProductAttributeUpdateBefore implements ObserverInterface
         )->addAttributeToSelect(
             'name'
         )->addAttributeToSelect(
-            'image'
+            'thumbnail'
         )->addAttributeToSelect(
             'price'
         )->addAttributeToSelect(
@@ -100,7 +100,7 @@ class ProductAttributeUpdateBefore implements ObserverInterface
                 'id' => $product->getId(),
                 'name' => $product->getName(),
                 'sku' => $product->getSku(),
-                'image' => $product->getData('image'),
+                'thumbnail' => $product->getData('thumbnail'),
                 'price' => $product->getData('price'),
                 'product_url' => $product->getProductUrl()
             );

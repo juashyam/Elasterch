@@ -1,0 +1,39 @@
+#elasterch_autocomplete.search-autocomplete {
+    background: #f0f0f0 none repeat scroll 0 0;
+    border: 1px solid #7e807e;
+    border-radius: 2px;
+    padding: 0 0 10px 10px;
+    width: 250px;
+}
+
+#elasterch_autocomplete .elasterch-result {
+    max-height: 400px;
+    overflow: auto;
+}
+
+#elasterch_autocomplete .elasterch-result .elasterch-product {
+    padding: 6px 0;
+}
+
+#elasterch_autocomplete .elasterch-result .elasterch-product .elasterch-product-name {
+    clear: both;
+}
+
+#elasterch_autocomplete .elasterch-result .elasterch-product .elasterch-product-name a {
+    color: #575757;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 1s ease 0s;
+}
+
+#elasterch_autocomplete .elasterch-result .elasterch-product .elasterch-product-name a:hover {
+    color: #333;
+}
+
+#elasterch_autocomplete .elasterch-result .elasterch-product .elasterch-product-price span {
+    color: #1979c3;
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+}

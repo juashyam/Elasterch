@@ -68,7 +68,7 @@ class Synchronize extends \Magento\Config\Block\System\Config\Form\Field
      */
     public function getButtonHtml()
     {
-        $button = $this->getLayout()->createBlock(
+        /*$button = $this->getLayout()->createBlock(
             'Magento\Backend\Block\Widget\Button'
         )->setData(
             [
@@ -77,6 +77,31 @@ class Synchronize extends \Magento\Config\Block\System\Config\Form\Field
             ]
         );
 
-        return $button->toHtml();
+        return $button->toHtml();*/
+
+        /*$btnHtml = '<button id="synchronize_button" class="progress-button" data-style="fill" data-horizontal type="button">
+            <span class="content">'. __('Synchronize').'</span>
+            <span class="progress">
+                <span class="progress-inner" data-width="0" style="width: 0%; opacity: 1;"></span>
+            </span>
+        </button>';*/
+
+        /*$btnHtml = '<button id="synchronize_button" data-horizontal="" data-style="shrink" class="progress-button" type="button">
+            <span class="content">'. __('Synchronize').'</span>
+            <span class="progress">
+                <span class="progress-inner notransition" data-width="0" style="width: 0%; opacity: 1;"></span>
+            </span>
+        </button>';*/
+
+        $btnHtml = '<button id="synchronize_button" data-horizontal="" data-perspective="" data-style="rotate-angle-bottom" class="progress-button" type="button">
+            <span class="progress-wrap">
+                <span class="content">'. __('Synchronize').'</span>
+                <span class="progress">
+                    <span class="progress-inner notransition" style="width: 0%; opacity: 1;"></span>
+                </span>
+            </span>
+        </button>';
+
+        return $btnHtml;
     }
 }

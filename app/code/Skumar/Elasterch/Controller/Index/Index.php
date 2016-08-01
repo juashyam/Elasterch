@@ -4,13 +4,13 @@ namespace Skumar\Elasterch\Controller\Index;
 class Index extends \Skumar\Elasterch\Controller\Index
 {
 	public function execute() {
-		/*$this->_view->loadLayout();
-		$this->_view->renderLayout();*/
+		$this->_view->loadLayout();
+		$this->_view->renderLayout();
 
 		/*$params = [
 		    'index' => 'catalog',
 		    'type' => 'product',
-		    'size' => 1000,
+		    'size' => $this->_elasticClient->countDocument(),
 		    'body' => [
 		        'query' => [
 		            "match_all" => []
@@ -19,15 +19,19 @@ class Index extends \Skumar\Elasterch\Controller\Index
 		];
 
 
-		$results = $this->_elasticClient->getelasticClient()->search($params);
+		$results = $this->_elasticClient->getElasticClient()->search($params);
 
 		echo '<pre>'; print_r($results);*/
 
-		$params = [
-		    'index' => 'catalog',
-		    'type' => 'product'
-		];
-		echo $this->_elasticClient->getelasticClient()->count($params)["count"];
+
+
+		// $results = $this->_elasticClient->getElasticClient()->getDocumentCount();
+        /*$params = [
+            'index' => 'catalog',
+            'type' => 'product'
+        ];
+
+		echo '<pre>'; print_r(json_encode($this->_elasticClient->getDocuments()['hits']['hits'])); exit;*/
 
 		/*$queryString = '*oga*';
 		$response =  $this->_elasticClient->searchDocument('product', 100, 0, $queryString);

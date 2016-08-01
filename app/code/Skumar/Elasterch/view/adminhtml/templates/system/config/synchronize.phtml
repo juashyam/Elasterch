@@ -1,5 +1,5 @@
 <?php /* @var $block \Skumar\Elasterch\Block\System\Config\Synchronize */ ?>
-
+<link  rel="stylesheet" type="text/css"  media="all" href="<?php echo $block->getViewFileUrl('Skumar_Elasterch::css/progress.css'); ?>" />
 <script>
 require([
     'jquery',
@@ -8,14 +8,25 @@ require([
 
     function enableSyncButton() {
         Form.Element.enable('synchronize_button');
-        $('synchronize_button').removeClassName('disabled');
-        $('sync_span').addClassName('no-display');
+        /*$('synchronize_button').removeClassName('disabled');
+        $('sync_span').addClassName('no-display');*/
     }
 
     function disableSyncButton() {
         Form.Element.disable('synchronize_button');
-        $('synchronize_button').addClassName('disabled');
-        $('sync_span').removeClassName('no-display');
+        /*$('synchronize_button').addClassName('disabled');
+        $('sync_span').removeClassName('no-display');*/
+    }
+
+    function initSync() {
+        jQuery('#synchronize_button').addClass('state-loading');
+        jQuery('#synchronize_button').removeClass('state-success');
+        jQuery('#synchronize_button .progress-inner').removeClass('notransition');
+    }
+
+    function completeSync() {
+        jQuery('#synchronize_button').removeClass('state-success');
+        jQuery('#synchronize_button .progress-inner').addClass('notransition');        
     }
 
     function syncronize(pageNum = 1, flushIndex = 0) {
@@ -31,9 +42,15 @@ require([
             onSuccess: function(transport) {
                 var response = JSON.parse(transport.responseText);
                 if(response.has_next_page > 0) {
+                    jQuery('#synchronize_button .progress-inner').css('width', response.progress+'%');
                     syncronize(response.page_num);
                 } else {
+                    jQuery('#synchronize_button .progress-inner').css('width', '100%');
+                    jQuery('#synchronize_button').removeClass('state-loading');
+                    jQuery('#synchronize_button').addClass('state-success');
+                    jQuery('#synchronize_button .progress-inner').css('width', '0%');
                     enableSyncButton();
+                    setTimeout(completeSync, 1000);
                 }
             }
         });
@@ -41,6 +58,7 @@ require([
 
     jQuery('#synchronize_button').click(function () {
         disableSyncButton();
+        initSync();
         syncronize(1, 1);
     });
 });

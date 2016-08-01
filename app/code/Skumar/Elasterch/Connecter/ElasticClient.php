@@ -16,7 +16,7 @@ class ElasticClient
     /**
      * DOcument parameters
      */
-    const PRODUCT_DOCUMENT_PARAMS = array('id', 'name', 'sku', 'image', 'price', 'product_url');
+    const PRODUCT_DOCUMENT_PARAMS = array('id', 'name', 'sku', 'thumbnail', 'price', 'product_url');
 
     /**
      * @var \Elasticsearch\ClientBuilder
@@ -126,6 +126,16 @@ class ElasticClient
 
 
     /**
+     * Get elasticsearch client
+     *
+     * @return \Elasticsearch\ClientBuilder
+     */
+    public function getElasticClient() {
+        return $this->_elasticClient;
+    }
+
+
+    /**
      * Init index
      */
     public function initIndex() {
@@ -146,12 +156,14 @@ class ElasticClient
 
 
     /**
-     * Get elasticsearch client
-     *
-     * @return \Elasticsearch\ClientBuilder
+     * Count documents
      */
-    public function getElasticClient() {
-    	return $this->_elasticClient;
+    public function getDocumentCount($type = 'product') {
+        $params = [
+            'index' => self::INDEX,
+            'type' => $type
+        ];
+        return $this->_elasticClient->count($params)["count"];
     }
 
 
@@ -181,13 +193,41 @@ class ElasticClient
         }
     }
 
+    /**
+     * Get all documents
+     */
+    public function getDocuments($type = 'product', $size = null) {
+        try {
+            if(is_null($size)) {
+                $size = $this->getDocumentCount();
+            }
+
+            $params = [
+                'index' => self::INDEX,
+                'type' => $type,
+                'size' => $size,
+                'body' => [
+                    'query' => [
+                        "match_all" => []
+                    ]
+                ]
+            ];
+
+            $response = $this->_elasticClient->search($params);
+            return $response;
+        } catch (\Elasticsearch\Common\Exceptions\ElasticsearchException $e) {
+            $this->_logger->error($e);
+            return false;
+        }
+    }
+
 
     /**
      * Search document
      */
     public function searchDocument($type, $size, $from, $queryString) {
         try {
-            $params['index'] = 'catalog';
+            $params['index'] = self::INDEX;
             $params['type']  = $type;
             $params['size']  = $size;
             $params['from']  = $from;

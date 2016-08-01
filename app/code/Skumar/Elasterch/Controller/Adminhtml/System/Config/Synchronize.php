@@ -21,6 +21,11 @@ class Synchronize extends \Magento\Backend\App\Action
     protected $_productFactory;
 
     /**
+     *@param \Magento\Catalog\Helper\Image
+     */
+    protected $_imageHelper;
+
+    /**
      * @var \Psr\Log\LoggerInterface
      */
     protected $_logger;
@@ -30,16 +35,19 @@ class Synchronize extends \Magento\Backend\App\Action
      * @param \Magento\Backend\App\Action\Context $context
      * @param \Skumar\Elasterch\Connecter\ElasticClient $elastic
      * @param \Magento\Catalog\Model\ProductFactory $productFactory
+     * @param \Magento\Catalog\Helper\Image $imageHelper
      * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
         \Magento\Backend\App\Action\Context $context,
         \Skumar\Elasterch\Connecter\ElasticClient $elastic,
         \Magento\Catalog\Model\ProductFactory $productFactory,
+        \Magento\Catalog\Helper\Image $imageHelper,
         \Psr\Log\LoggerInterface $logger
     ) {
         $this->_elasticClient = $elastic;
         $this->_productFactory = $productFactory;
+        $this->_imageHelper = $imageHelper;
         $this->_logger = $logger;
         parent::__construct($context);
     }
@@ -63,11 +71,11 @@ class Synchronize extends \Magento\Backend\App\Action
         $collection = $this->_productFactory->create()->getCollection()
             ->addAttributeToSelect('sku')
             ->addAttributeToSelect('name')
-            ->addAttributeToSelect('image')
+            ->addAttributeToSelect('thumbnail')
             ->addAttributeToSelect('price')
             ->addAttributeToSelect('visibility')
             ->addAttributeToSelect('product_url')
-            ->setPage($page, 100);
+            ->setPage($page, 50);
         $collection->setVisibility(array(Visibility::VISIBILITY_IN_SEARCH, Visibility::VISIBILITY_BOTH));
 
         $results = $collection->load();
@@ -80,7 +88,7 @@ class Synchronize extends \Magento\Backend\App\Action
                 'id' => $product->getId(),
                 'name' => $product->getName(),
                 'sku' => $product->getSku(),
-                'image' => $product->getData('image'),
+                'thumbnail' => $product->getData('thumbnail'),
                 'price' => $product->getData('price'),
                 'product_url' => $product->getProductUrl()
             );
@@ -90,7 +98,7 @@ class Synchronize extends \Magento\Backend\App\Action
         }
 
         if($nextPage <= $totalPage) {
-            echo json_encode(array('has_next_page' => 1, 'page_num' => $nextPage));
+            echo json_encode(array('has_next_page' => 1, 'page_num' => $nextPage, 'progress' => ($page/$totalPage)*100));
         } else {
             echo json_encode(array('has_next_page' => 0));
         }

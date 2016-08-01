@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <title>Elasterch</title>
+        <css src="Skumar_Elasterch::css/styles.css"/>
+    </head>
+    <body>
+        <referenceContainer name="header-wrapper">
+        	<referenceBlock name="top.search" remove="true"/>
+            <block class="Skumar\Elasterch\Block\Elasterch" name="top.elasticsearch" as="topElasterch" template="Skumar_Elasterch::elasterch.phtml" />
+        </referenceContainer>    	
+    </body>
+</page>
